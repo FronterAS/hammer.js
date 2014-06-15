@@ -1,5 +1,4 @@
-var Hammer = require('hammerjs');
-
+var Hammer = require('../../../node_modules/hammerjs/hammer.min.js');
 
 // polyfill
 var reqAnimationFrame = (function () {
@@ -10,8 +9,8 @@ var reqAnimationFrame = (function () {
 
 var el = document.querySelector("#hitarea");
 
-var START_X = Math.round((el.parentNode.offsetWidth - el.offsetWidth) / 2);
-var START_Y = Math.round((el.parentNode.offsetHeight - el.offsetHeight) / 2);
+var startX = Math.round((el.parentNode.offsetWidth - el.offsetWidth) / 2);
+var startY = Math.round((el.parentNode.offsetHeight - el.offsetHeight) / 2);
 
 var ticking = false;
 var transform;
@@ -26,6 +25,7 @@ mc.on("rotate", onRotate);
 mc.on("pinch", onPinch);
 mc.on("tap", onTap);
 mc.on("doubletap", onDoubleTap);
+mc.on("hold", onHold);
 
 mc.on("panstart rotatestart pinchstart", resetElementStart);
 mc.on("panend rotateend pinchend pancancel rotatecancel pinchcancel", resetElementEnd);
@@ -36,7 +36,7 @@ function resetElementStart() {
 
 function resetElementEnd() {
     transform = {
-        translate: { x: START_X, y: START_Y },
+        translate: { x: startX, y: startY },
         scale: 1,
         rotate: 0
     };
@@ -46,9 +46,9 @@ function resetElementEnd() {
 
 function updateElementTransform() {
     var value = [
-                'translate3d(' + transform.translate.x + 'px, ' + transform.translate.y + 'px, 0)',
-                'scale(' + transform.scale + ', ' + transform.scale + ')',
-                'rotate(' + transform.rotate + 'deg)'];
+        'translate3d(' + transform.translate.x + 'px, ' + transform.translate.y + 'px, 0)',
+        'scale(' + transform.scale + ', ' + transform.scale + ')',
+        'rotate(' + transform.rotate + 'deg)'];
     el.style.webkitTransform = el.style.transform = value.join(" ");
     ticking = false;
 }
@@ -60,38 +60,43 @@ function requestElementUpdate() {
     }
 }
 
-// gesture handlers
-
 function onPan(ev) {
     transform.translate = {
-        x: START_X + ev.deltaX,
-        y: START_Y + ev.deltaY
+        x: startX + ev.deltaX,
+        y: startY + ev.deltaY
     };
     requestElementUpdate();
 }
 
 function onSwipe(ev) {
-    el.style.background = 'black';
-    setTimeout(function () {
-        el.style.background = 'white';
-        requestElementUpdate();
-    }, 200);
+    transform.translate = {
+        x: startX + (ev.deltaX * 1.2),
+        y: startY + (ev.deltaY * 1.2)
+    };
+    transform.scale = 1.2;
     requestElementUpdate();
+
+    setTimeout(function () {
+        resetElementEnd();
+    }, 400);
 }
 
 function onPinch(ev) {
     transform.scale = ev.scale;
     requestElementUpdate();
 }
+
 function onRotate(ev) {
     transform.rotate = ev.rotation;
     requestElementUpdate();
 }
 
 function onTap(ev) {
-    el.style.background = '#fd0';
+    transform.scale = .9;
+    requestElementUpdate();
+
     setTimeout(function () {
-        el.style.background = 'white';
+        transform.scale = 1;
         requestElementUpdate();
     }, 200);
 }
@@ -99,6 +104,14 @@ function onTap(ev) {
 function onDoubleTap(ev) {
     transform.rotate = !transform.rotate ? 360 : 0;
     requestElementUpdate();
+}
+
+function onHold(ev) {
+    el.style.background = '#fd0';
+    setTimeout(function () {
+        el.style.background = 'white';
+        requestElementUpdate();
+    }, 500);
 }
 
 resetElementEnd();

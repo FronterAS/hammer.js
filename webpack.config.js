@@ -13,7 +13,7 @@ module.exports = {
     },
     resolve: {
         modulesDirectories: ["./node_modules", "./bower_components"],
-        extensions: ["", ".coffee", ".js"]
+        extensions: ["", ".js"]
     },
     plugins: [
         new webpack.optimize.UglifyJsPlugin()
