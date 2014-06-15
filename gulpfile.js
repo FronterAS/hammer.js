@@ -14,7 +14,6 @@ var uglify = require("gulp-uglify");
 var jade = require("gulp-jade");
 var connect = require("gulp-connect");
 var prefix = require("gulp-autoprefixer");
-var compress = require('compression');
 
 
 gulp.task("compile-sass", function () {
@@ -48,10 +47,7 @@ gulp.task("server", function () {
         root: "",
         host: "0.0.0.0",
         port: 9000,
-        livereload: true,
-        middleware: function () {
-            return [ compress({ level: 9}) ];
-        }
+        livereload: true
     });
 });
 
@@ -62,4 +58,4 @@ gulp.task("watch", function () {
 });
 
 gulp.task("default", ["server", "watch"]);
-gulp.task("build", ["compile-sass", "compile-js", "compile-jade"]);
+gulp.task("build", ["compile-sass", "webpack", "compile-jade"]);
